@@ -47,10 +47,10 @@ Key Equations (ASHRAE 62.1-2022)
 Example Input (inputs.txt)
 --------------------------
 
-occupancy = Classrooms (age 9 plus)
-area_ft2 = 969
-Ez = 1.0
-num_people = (optional, integer)
+occupancy = Classrooms (age 9 plus)   
+area_ft2 = 969   
+Ez = 1.0   
+num_people = (optional, integer)   
 
 Usage
 -----
