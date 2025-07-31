@@ -42,8 +42,15 @@ people_var = tk.StringVar(value="")
 ez_var = tk.StringVar(value="1.0")
 
 ttk.Label(frm, text="Occupancy:").grid(row=0, column=0, sticky="w")
-occ_combo = ttk.Combobox(frm, textvariable=occupancy_var, values=list(VRP_TABLE_6_1.keys()), width=35)
+occ_combo = ttk.Combobox(
+    frm,
+    textvariable=occupancy_var,
+    values=list(VRP_TABLE_6_1.keys()),
+    width=35,
+    height=50   # Add this line for a taller dropdown
+)
 occ_combo.grid(row=0, column=1, columnspan=2, sticky="ew")
+
 
 ttk.Label(frm, text="Area (ft²):").grid(row=1, column=0, sticky="w")
 ttk.Entry(frm, textvariable=area_var, width=12).grid(row=1, column=1, sticky="w")
