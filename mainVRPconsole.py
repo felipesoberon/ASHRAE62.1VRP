@@ -11,6 +11,7 @@ def main(**params):
     if occupancy not in VRP_TABLE_6_1:
         print("ERROR: Occupancy category '{}' not found in VRP table.".format(occupancy))
         print("Please check the name and try again. (Case and spelling must match exactly.)")
+        print("Voz                  |                     0.00 | CFM          | [Zone Outdoor Airflow, Eq. 6-2]") 
         print()
         return    
     
