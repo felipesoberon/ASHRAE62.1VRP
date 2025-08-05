@@ -1,4 +1,0 @@
-occupancy = Office space
-area_ft2 = 969
-#num_people = 30   # If omitted use default density
-Ez = 0.8           # Zone air distribution effectiveness
