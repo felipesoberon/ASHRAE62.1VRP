@@ -1,32 +1,22 @@
 import re
 import math
+import argparse
 from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1
 
-FT2_TO_M2 = 0.092903  # 1 ft² = 0.092903 m²
+FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 
-
-
-def read_inputs(path):
-    pat = re.compile(r'^\s*([^#=]+?)\s*=\s*([^\n#]+)')
-    values = {}
-    with open(path, "r", encoding="utf-8") as f:
-        for line in f:
-            m = pat.match(line)
-            if m:
-                key, val = m.groups()
-                values[key.strip()] = val.strip()
-    return values
-
-
-
-
-def main(cfg_file="inputs.txt"):
-    params = read_inputs(cfg_file)
+def main(**params):
     occupancy = params["occupancy"]
-    area_ft2 = float(params["area_ft2"])
-    area_m2 = area_ft2 * FT2_TO_M2
+    if "area_ft2" in params:
+        area_ft2 = float(params["area_ft2"])
+        area_m2 = area_ft2 * FT2_TO_M2
+    elif "area_m2" in params:
+        area_m2 = float(params["area_m2"])
+        area_ft2 = area_m2 / FT2_TO_M2
+    else:
+        raise ValueError("Either area_ft2 or area_m2 must be specified.")
     num_people = params.get("num_people", None)
-    Ez = float(params.get("Ez", 1.0))  
+    Ez = float(params.get("Ez", 1.0))
     if num_people is not None:
         num_people = float(num_people)
     else:
@@ -39,26 +29,33 @@ def main(cfg_file="inputs.txt"):
 
     Voz, info = single_zone_vrp_Voz(occupancy, area_ft2, num_people, VRP_TABLE_6_1, Ez)
 
-
     print("\nASHRAE 62.1-2022 Ventilation Rate Procedure (Single Zone)\n")
-    print(f"{'Parameter':<20} | {'Value':>12} | {'Units':<10} | {'Notes'}")
-    print("-" * 65)
-    print(f"{'Occupancy':<20} | {occupancy:>12} | {'':<10} |")
-    print(f"{'Area':<20} | {area_ft2:12.2f} | {'ft²':<10} |")
-    print(f"{'Area':<20} | {area_m2:12.2f} | {'m²':<10} |")
-    print(f"{'People':<20} | {num_people:12.2f} | {'persons':<10} | (default density: {info['default_density']}/1000 ft²)")
-    print(f"{'Rp':<20} | {info['Rp']:12.2f} | {'cfm/person':<10} |")
-    print(f"{'Ra':<20} | {info['Ra']:12.2f} | {'cfm/ft²':<10} |")
-    print(f"{'Ez':<20} | {info['Ez']:12.2f} | {'-':<10} | Zone Air Distribution Effectiveness")
-    print(f"{'Vbz':<20} | {info['Vbz']:12.2f} | {'CFM':<10} | [Breathing Zone Outdoor Air]")
-    print(f"{'Voz':<20} | {Voz:12.2f} | {'CFM':<10} | [Zone Outdoor Airflow, Eq. 6-2]")
-    print("-" * 65)
-    print(f"{'Equation used:':<20} | {info['notes']}")
+    # Use wider columns: Parameter=20, Value=24, Units=12, Notes=50
+    print("{:<20} | {:>24} | {:<12} | {:<50}".format("Parameter", "Value", "Units", "Notes"))
+    print("-" * 115)
+    print("{:<20} | {:>24} | {:<12} | {:<50}".format("Occupancy", occupancy, "", ""))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Area", area_ft2, "ft^2", ""))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Area", area_m2, "m^2", ""))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("People", num_people, "persons", "(default density: {}/1000 ft^2)".format(info["default_density"])))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Rp", info["Rp"], "cfm/person", ""))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Ra", info["Ra"], "cfm/ft^2", ""))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Ez", info["Ez"], "-", "Zone Air Distribution Effectiveness"))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Vbz", info["Vbz"], "CFM", "[Breathing Zone Outdoor Air]"))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Voz", Voz, "CFM", "[Zone Outdoor Airflow, Eq. 6-2]"))
+    print("-" * 115)
+    print("{:<20} | {:<93}".format("Equation used:", info["notes"]))
     print()
 
 
 
-
-
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="ASHRAE 62.1-2022 VRP Console Calculator")
+    parser.add_argument("-occupancy", type=str, required=True, help="Occupancy category")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("-area_ft2", type=float, help="Area in square feet")
+    group.add_argument("-area_m2", type=float, help="Area in square meters")
+    parser.add_argument("-num_people", type=float, help="Number of people (if not set, uses default density)")
+    parser.add_argument("-Ez", type=float, help="Zone air distribution effectiveness (default=1.0)")
+    args = parser.parse_args()
+    p = {k: v for k, v in vars(args).items() if v is not None}
+    main(**p)
