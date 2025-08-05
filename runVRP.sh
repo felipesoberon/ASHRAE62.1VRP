@@ -2,11 +2,19 @@
 
 # Parallel lists (same length)
 OCCUPANCY=(
-  "Classrooms (age 9 plus)"
-  "Lecture classroom"
+  "Break rooms (General)"
+  "Lobbies"
+  "Lobbies"
+  "Office space"
+  "Office space"
+  "Office space"
+  "Office space"
+  "Break rooms (General)"
+  "Conference/meeting"
 )
-AREA=(500 1000 )
-PEOPLE=(15 30 )
+
+AREA=(472 878 205 78 209 204 207 102 231)
+PEOPLE=(12 29 7 1 2 2 2 3 12)
 
 N=${#OCCUPANCY[@]}
 

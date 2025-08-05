@@ -6,7 +6,14 @@ from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE
 FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 
 def main(**params):
+
     occupancy = params["occupancy"]
+    if occupancy not in VRP_TABLE_6_1:
+        print("ERROR: Occupancy category '{}' not found in VRP table.".format(occupancy))
+        print("Please check the name and try again. (Case and spelling must match exactly.)")
+        print()
+        return    
+    
     if "area_ft2" in params:
         area_ft2 = float(params["area_ft2"])
         area_m2 = area_ft2 * FT2_TO_M2
