@@ -31,9 +31,13 @@ def main(**params):
         # Estimate using default occupant density from VRP table
         row = VRP_TABLE_6_1[occupancy]
         density = row["Default_Occ_Density_per_1000ft2"]
+         
         if not density or area_ft2 == 0:
-            raise ValueError("num_people not given and default density is not available.")
-        num_people = math.ceil((density * area_ft2) / 1000)
+            print("WARNING: num_people not given and default density is not available. Setting num_people = 0")
+            num_people = 0
+        else:
+            num_people = math.ceil((density * area_ft2) / 1000)
+
 
     Voz, info = single_zone_vrp_Voz(occupancy, area_ft2, num_people, VRP_TABLE_6_1, Ez)
 
