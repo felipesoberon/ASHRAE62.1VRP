@@ -466,3 +466,66 @@ def single_zone_vrp_Voz(occupancy, area_ft2, num_people, VRP_TABLE_6_1, Ez=1.0):
     info["Voz"] = Voz
     info["notes"] += f"; Voz = Vbz / Ez = {Vbz:.2f} / {Ez} = {Voz:.2f} CFM (Zone OA per Eq. 6-2)"
     return Voz, info
+
+
+
+
+
+
+def system_vrp_Vot(system_type, voz_values, vou=None, ev=None):
+    """
+    Calculate outdoor-air intake flow (Vot) for a ventilation system
+    using ASHRAE 62.1-2022 Section 6.2 logic.
+
+    Parameters
+    ----------
+    system_type : int
+        1 = Single-Zone System
+        2 = 100 % Outdoor-Air System
+        3 = Multiple-Zone Recirculating System
+    voz_values  : float | list[float]
+        Zone outdoor-airflow(s) Voz, CFM.
+        Accepts a single value (float) or an iterable of values.
+    vou        : float, optional
+        Uncorrected outdoor-air intake, CFM (required for system_type 3).
+    ev         : float, optional
+        System ventilation efficiency Ev (required for system_type 3).
+
+    Returns
+    -------
+    Vot : float
+        Outdoor-air intake flow, CFM.
+    info : dict
+        Calculation notes and echo of inputs.
+    """
+    # Normalise to list for consistent handling
+    if not isinstance(voz_values, (list, tuple)):
+        voz_list = [voz_values]
+    else:
+        voz_list = list(voz_values)
+
+    notes = []
+    if system_type == 1:                               # Eq. 6-3
+        Vot = voz_list[0]
+        notes.append(f"Single-zone: Vot = Voz = {Vot:.2f} CFM")
+    elif system_type == 2:                             # Eq. 6-4
+        Vot = sum(voz_list)
+        notes.append(f"100 % OA: Vot = ΣVoz = {Vot:.2f} CFM")
+    elif system_type == 3:                             # Eq. 6-10
+        if vou is None or ev is None:
+            raise ValueError("vou and ev are required for system_type 3")
+        Vot = vou / ev
+        notes.append(f"Multi-zone: Vot = {vou:.2f} / {ev:.2f} = {Vot:.2f} CFM")
+    else:
+        raise ValueError(f"Unknown system_type {system_type}")
+
+    info = {
+        "system_type": system_type,
+        "voz_values": voz_list,
+        "vou": vou,
+        "ev": ev,
+        "Vot": Vot,
+        "notes": "; ".join(notes)
+    }
+    return Vot, info
+

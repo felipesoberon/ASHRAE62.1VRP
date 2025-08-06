@@ -2,12 +2,32 @@ import re
 import math
 import argparse
 from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1
+from vrp_dictionaries import system_vrp_Vot
 
 FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 
 def main(**params):
+    
+    print()
 
-    occupancy = params["occupancy"]
+    system_type = int(params.get("system_type", 1))
+    if system_type != 1:
+        print("WARNING: system_type {} not implemented; defaulting to 1 (Single-Zone)"
+              .format(system_type))
+        system_type = 1
+
+#   occupancy = params["occupancy"] 
+    occ_raw = params["occupancy"]          # list or str from argparse
+    if isinstance(occ_raw, (list, tuple)):
+        if len(occ_raw) > 1:
+            print("WARNING: multiple occupancies supplied; "
+                  "using first entry for single-zone calculation")
+        occupancy = occ_raw[0]             # pick the first item
+    else:
+        occupancy = occ_raw    
+    
+    
+    
     if occupancy not in VRP_TABLE_6_1:
         print("ERROR: Occupancy category '{}' not found in VRP table.".format(occupancy))
         print("Please check the name and try again. (Case and spelling must match exactly.)")
@@ -39,7 +59,11 @@ def main(**params):
             num_people = math.ceil((density * area_ft2) / 1000)
 
 
-    Voz, info = single_zone_vrp_Voz(occupancy, area_ft2, num_people, VRP_TABLE_6_1, Ez)
+    # Voz, Vot calculations
+    Voz, info     = single_zone_vrp_Voz(occupancy, area_ft2, num_people, VRP_TABLE_6_1, Ez)
+    Vot, vot_info = system_vrp_Vot(system_type, Voz)
+    
+    
 
     print("\nASHRAE 62.1-2022 Ventilation Rate Procedure (Single Zone)\n")
     # Use wider columns: Parameter=20, Value=24, Units=12, Notes=50
@@ -54,20 +78,34 @@ def main(**params):
     print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Ez", info["Ez"], "-", "Zone Air Distribution Effectiveness"))
     print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Vbz", info["Vbz"], "CFM", "[Breathing Zone Outdoor Air]"))
     print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Voz", Voz, "CFM", "[Zone Outdoor Airflow, Eq. 6-2]"))
+    print("{:<20} | {:24.2f} | {:<12} | {:<50}".format("Vot", Vot, "CFM", "[Outdoor-Air Intake, Eq. 6-3]"))    
     print("-" * 115)
     print("{:<20} | {:<93}".format("Equation used:", info["notes"]))
+    print("{:<20} | {:<93}".format("", vot_info["notes"]))
     print()
+
+
+
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ASHRAE 62.1-2022 VRP Console Calculator")
-    parser.add_argument("-occupancy", type=str, required=True, help="Occupancy category")
+
+#   parser.add_argument("-occupancy", type=str, required=True, help="Occupancy category")
+    parser.add_argument("-occupancy", type=str, nargs="+", required=True,
+                        help="Occupancy category (one or more, quote if spaces)" )
+    
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("-area_ft2", type=float, help="Area in square feet")
     group.add_argument("-area_m2", type=float, help="Area in square meters")
     parser.add_argument("-num_people", type=float, help="Number of people (if not set, uses default density)")
     parser.add_argument("-Ez", type=float, help="Zone air distribution effectiveness (default=1.0)")
+    parser.add_argument("-system_type", type=int, choices=[1, 2, 3], default=1,
+                        help="1 = Single-Zone System (default), "
+                             "2 = 100 pct Outdoor-Air System, "
+                             "3 = Multiple-Zone Recirculating System")    
+    
     args = parser.parse_args()
     p = {k: v for k, v in vars(args).items() if v is not None}
     main(**p)
