@@ -426,7 +426,7 @@ def single_zone_vrp_Vbz(occupancy, area_ft2, num_people, VRP_TABLE_6_1):
     """
     occ_row = VRP_TABLE_6_1[occupancy]
     Rp = occ_row["Rp_cfm_per"]  # cfm/person
-    Ra = occ_row["Ra_cfm_ft2"]  # cfm/ft²
+    Ra = occ_row["Ra_cfm_ft2"]  # cfm/ft^2
     default_density = occ_row["Default_Occ_Density_per_1000ft2"]
 
     Vbz = Rp * num_people + Ra * area_ft2  # [CFM]
@@ -437,7 +437,7 @@ def single_zone_vrp_Vbz(occupancy, area_ft2, num_people, VRP_TABLE_6_1):
         "area_ft2": area_ft2,
         "Vbz": Vbz,
         "default_density": default_density,
-        "notes": f"{Rp} cfm/person x {num_people} + {Ra} cfm/ft² x {area_ft2} = {Vbz:.2f} CFM (Breathing Zone OA)"
+        "notes": f"{Rp} cfm/person x {num_people} + {Ra} cfm/ft^2 x {area_ft2} = {Vbz:.2f} CFM (Breathing Zone OA)"
     }
     return Vbz, info
 
