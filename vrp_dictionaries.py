@@ -510,7 +510,7 @@ def system_vrp_Vot(system_type, voz_values, vou=None, ev=None):
         notes.append(f"Single-zone: Vot = Voz = {Vot:.2f} CFM")
     elif system_type == 2:                             # Eq. 6-4
         Vot = sum(voz_list)
-        notes.append(f"100 % OA: Vot = ΣVoz = {Vot:.2f} CFM")
+        notes.append(f"100 % OA: Vot = SUM Voz = {Vot:.2f} CFM")
     elif system_type == 3:                             # Eq. 6-10
         if vou is None or ev is None:
             raise ValueError("vou and ev are required for system_type 3")

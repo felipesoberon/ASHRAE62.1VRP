@@ -3,7 +3,7 @@
 # Parallel lists (same length)
 OCCUPANCY=(
   "Break rooms (General)"
-  "Lobbies"
+  "Toilet"
   "Lobbies"
   "Office space"
   "Office space"
