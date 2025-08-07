@@ -1,7 +1,7 @@
 import re
 import math
 import argparse
-from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1, system_vrp_Vot, calculate_occupant_diversity, calculate_uncorrected_outdoor_air_intake, calculate_system_ventilation_efficiency_simplified
+from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1, system_vrp_Vot, calculate_occupant_diversity, calculate_uncorrected_outdoor_air_intake, calculate_system_ventilation_efficiency_simplified, calculate_system_ventilation_efficiency_appendix_A
 
 FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 
@@ -190,7 +190,19 @@ def main(**params):
             print("  Zone {}: {:.2f} CFM".format(i+1, Vpz_min_list[i]))
         print("-" * 60)
 
+        print("System Ventilation Efficiency (Ev) : 6.2.4.3 Simplified Procedure ")
         print_vrp_system_results(Vot, vot_info)
+        
+        # Repeat with the Appendix A method
+        Ev, Ev_info   = calculate_system_ventilation_efficiency_appendix_A(Vou, Voz_list, Vpz_min_list)
+        Vot, vot_info = system_vrp_Vot(3, voz_values=Voz_list, vou=Vou, ev=Ev)
+        
+        print("System Ventilation Efficiency (Ev) : Appendix A : A1.2.1 Single Supply Systems ")
+        print("Average outdoor-air fraction (Xs): {:.3f}".format(Ev_info["Xs"]))
+        print("Zone ventilation efficiencies (Evz):", ["{:.3f}".format(x) for x in Ev_info["Evz"]])
+        print("System ventilation efficiency (Ev): {:.3f}".format(Ev_info["Ev"]))
+        print_vrp_system_results(Vot, vot_info)        
+
 
     else:
         pass  # Unknown system type; do nothing or print an error if you want

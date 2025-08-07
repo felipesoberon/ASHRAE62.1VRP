@@ -612,3 +612,63 @@ def calculate_system_ventilation_efficiency_simplified(D):
     else:
         Ev = 0.75
     return Ev
+
+
+
+
+
+def calculate_system_ventilation_efficiency_appendix_A(
+        Vou,
+        Voz_list,
+        Vpz_list=None):
+    """
+    Calculate system ventilation efficiency (Ev) per Appendix A
+    Single-Supply-System method (Eq. A-1 to A-3).
+
+    Parameters
+    ----------
+    Vou       : float
+        Uncorrected outdoor-air intake, CFM  (Eq. 6-5).
+    Voz_list  : list[float]
+        Zone outdoor-airflow values, CFM.
+    Vpz_list  : list[float] | None
+        Zone primary airflow values, CFM, at the condition analysed.
+        If None, Vpz is set equal to 1.5 × Voz for each zone
+        (per Eq. 6-9, a conservative default).
+
+    Returns
+    -------
+    Ev   : float
+        System ventilation efficiency.
+    info : dict
+        Calculation details: Xs, Zpz list, Evz list, Ev.
+    """
+    # Default Vpz_list if not supplied
+    if Vpz_list is None:
+        Vpz_list = [1.5 * v for v in Voz_list]   # Eq. 6-9 default
+
+    if len(Voz_list) != len(Vpz_list):
+        raise ValueError("Voz_list and Vpz_list must be the same length")
+
+    # System primary airflow Vps (sum of Vpz values used here)
+    Vps = sum(Vpz_list)
+    if Vps == 0:
+        raise ValueError("Vps is zero; cannot compute Xs")
+
+    # Eq. A-1: average outdoor-air fraction
+    Xs = Vou / Vps
+
+    # Eq. A-3 and A-2: zone fractions and zone efficiencies
+    Zpz = [voz / vpz if vpz > 0 else 0.0 for voz, vpz in zip(Voz_list, Vpz_list)]
+    Evz = [1.0 + Xs - z for z in Zpz]
+
+    # System ventilation efficiency is the minimum Evz
+    Ev = min(Evz)
+
+    info = {
+        "Xs": Xs,
+        "Zpz": Zpz,
+        "Evz": Evz,
+        "Ev": Ev
+    }
+    return Ev, info
