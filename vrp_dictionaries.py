@@ -1,4 +1,4 @@
-
+import math
 
 VRP_TABLE_6_1 = {
     # Animal Facilities
@@ -505,17 +505,21 @@ def system_vrp_Vot(system_type, voz_values, vou=None, ev=None):
         voz_list = list(voz_values)
 
     notes = []
+
     if system_type == 1:                               # Eq. 6-3
         Vot = voz_list[0]
         notes.append(f"Single-zone: Vot = Voz = {Vot:.2f} CFM")
+        
     elif system_type == 2:                             # Eq. 6-4
         Vot = sum(voz_list)
         notes.append(f"100 % OA: Vot = SUM Voz = {Vot:.2f} CFM")
+        
     elif system_type == 3:                             # Eq. 6-10
         if vou is None or ev is None:
-            raise ValueError("vou and ev are required for system_type 3")
+            raise ValueError("Vou and Ev are required for system_type 3")
         Vot = vou / ev
         notes.append(f"Multi-zone: Vot = {vou:.2f} / {ev:.2f} = {Vot:.2f} CFM")
+
     else:
         raise ValueError(f"Unknown system_type {system_type}")
 
@@ -529,3 +533,82 @@ def system_vrp_Vot(system_type, voz_values, vou=None, ev=None):
     }
     return Vot, info
 
+
+
+
+def calculate_occupant_diversity(num_people_list, areas_ft2, occupancies, VRP_TABLE_6_1):
+    """
+    Calculate occupant diversity ratio D for multiple-zone recirculating systems
+    as per ASHRAE 62.1 (Equation 6-6).
+
+    Parameters:
+        num_people_list (list of float): Actual or estimated number of people per zone.
+        areas_ft2 (list of float): Area per zone in ft^2.
+        occupancies (list of str): List of occupancy names (must match VRP_TABLE_6_1 keys).
+        VRP_TABLE_6_1 (dict): Occupancy table.
+
+    Returns:
+        D (float): Occupant diversity ratio.
+    """
+    numerator = sum(num_people_list)
+    denominator = 0.0
+    for i in range(len(occupancies)):
+        occ_row = VRP_TABLE_6_1[occupancies[i]]
+        density = occ_row["Default_Occ_Density_per_1000ft2"]
+        area = areas_ft2[i]
+        default_people = math.ceil((density * area) / 1000.0) if density else 0.0
+        denominator += default_people
+
+    D = numerator / denominator if denominator > 0 else 0.0
+    return D
+
+
+
+
+
+def calculate_uncorrected_outdoor_air_intake(D, num_people_list, areas_ft2, occupancies, VRP_TABLE_6_1):
+    """
+    Calculate uncorrected outdoor air intake Vou as per ASHRAE 62.1 Eq. 6-5.
+
+    Parameters:
+        D (float): Occupant diversity ratio.
+        num_people_list (list of float): Number of people per zone.
+        areas_ft2 (list of float): Area per zone in ft^2.
+        occupancies (list of str): List of occupancy names (must match VRP_TABLE_6_1 keys).
+        VRP_TABLE_6_1 (dict): Occupancy table.
+
+    Returns:
+        Vou (float): Uncorrected outdoor air intake in CFM.
+    """
+    sum_Rp_Pz = 0.0
+    sum_Ra_Az = 0.0
+    for i in range(len(occupancies)):
+        occ_row = VRP_TABLE_6_1[occupancies[i]]
+        Rp = occ_row["Rp_cfm_per"]
+        Ra = occ_row["Ra_cfm_ft2"]
+        Pz = num_people_list[i]
+        Az = areas_ft2[i]
+        sum_Rp_Pz += Rp * Pz
+        sum_Ra_Az += Ra * Az
+
+    Vou = D * sum_Rp_Pz + sum_Ra_Az
+    return Vou
+
+
+
+def calculate_system_ventilation_efficiency_simplified(D):
+    """
+    Calculate system ventilation efficiency (Ev) using the simplified procedure
+    from ASHRAE 62.1 (Eq. 6-7 and 6-8).
+
+    Parameters:
+        D (float): Occupant diversity ratio.
+
+    Returns:
+        Ev (float): System ventilation efficiency.
+    """
+    if D < 0.60:
+        Ev = 0.88 * D + 0.22
+    else:
+        Ev = 0.75
+    return Ev

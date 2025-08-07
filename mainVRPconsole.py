@@ -1,8 +1,7 @@
 import re
 import math
 import argparse
-from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1
-from vrp_dictionaries import system_vrp_Vot
+from vrp_dictionaries import single_zone_vrp_Vbz, single_zone_vrp_Voz, VRP_TABLE_6_1, system_vrp_Vot, calculate_occupant_diversity, calculate_uncorrected_outdoor_air_intake, calculate_system_ventilation_efficiency_simplified
 
 FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 
@@ -10,10 +9,6 @@ FT2_TO_M2 = 0.092903  # 1 ft^2 = 0.092903 m^2
 def preprocess_inputs(params, VRP_TABLE_6_1, FT2_TO_M2):
     system_type = int(params.get("system_type", 1))
     
-    if system_type > 2:
-        print("WARNING: system_type {} not implemented; defaulting to 1 (Single-Zone)" .format(system_type))
-        system_type = 1
-
     occ_raw = params["occupancy"]
     if isinstance(occ_raw, (list, tuple)):
         occupancies = list(occ_raw)
@@ -86,8 +81,8 @@ def preprocess_inputs(params, VRP_TABLE_6_1, FT2_TO_M2):
 
 
 
-    # For system_type 2: validate lengths
-    if system_type == 2:
+    # For system_type 2 and 3: validate lengths
+    if system_type > 1:
         n = len(occupancies)
         if n < 2:
             print("ERROR: For 100 pct outdoor-air system, two or more occupancy zones are required.")
@@ -167,9 +162,35 @@ def main(**params):
         print_vrp_system_results(Vot, vot_info)
 
     elif system_type == 3: # Handle multiple-zone recirculating system
+
+        D = calculate_occupant_diversity(num_people_list, areas_ft2, occupancies, VRP_TABLE_6_1)
+        Vou = calculate_uncorrected_outdoor_air_intake(D, num_people_list, areas_ft2, occupancies, VRP_TABLE_6_1)
+        Ev = calculate_system_ventilation_efficiency_simplified(D)
+
+        Voz_list = []
+        info_list = []
+        n_zones = len(occupancies)
+        for i in range(n_zones):
+            Voz_i, info_i = single_zone_vrp_Voz(occupancies[i],areas_ft2[i],num_people_list[i],VRP_TABLE_6_1,Ez_list[i] if Ez_list is not None else 1.0)
+            Voz_list.append(Voz_i)
+            info_list.append(info_i)
+
+        Vpz_min_list = [Voz * 1.5 for Voz in Voz_list]     
+        Vot, vot_info = system_vrp_Vot(3, voz_values=Voz_list, vou=Vou, ev=Ev)
         
-        # Implementation goes here
-        pass
+        for i in range(n_zones):
+            print_vrp_results(occupancies[i], areas_ft2[i], areas_m2[i], num_people_list[i], info_list[i], Voz_list[i])
+
+        print("Occupant diversity ratio (D): {:.3f}".format(D))
+        print("Uncorrected outdoor air intake (Vou): {:.2f} CFM".format(Vou))
+        print("System ventilation efficiency (Ev): {:.3f}".format(Ev))
+        print("-" * 60)
+        print("Zone minimum primary airflows (Vpz-min):")
+        for i in range(n_zones):
+            print("  Zone {}: {:.2f} CFM".format(i+1, Vpz_min_list[i]))
+        print("-" * 60)
+
+        print_vrp_system_results(Vot, vot_info)
 
     else:
         pass  # Unknown system type; do nothing or print an error if you want
