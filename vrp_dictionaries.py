@@ -54,7 +54,7 @@ VRP_TABLE_6_1 = {
     "Art classroom": {
         "Rp_cfm_per": 10, "Rp_Lps_per": 5, "Ra_cfm_ft2": 0.18, "Ra_Lps_m2": 0.9, "Default_Occ_Density_per_1000ft2": 20, "DeltaC_ppm": None, "Occupied_Standby_Allowed": None
     },
-    "Classrooms (ages 5–8)": {
+    "Classrooms (ages 5-8)": {
         "Rp_cfm_per": 10, "Rp_Lps_per": 5, "Ra_cfm_ft2": 0.12, "Ra_Lps_m2": 0.6, "Default_Occ_Density_per_1000ft2": 25, "DeltaC_ppm": 900, "Occupied_Standby_Allowed": None
     },
     "Classrooms (age 9 plus)": {
@@ -161,7 +161,7 @@ VRP_TABLE_6_1 = {
     "Computer (not printing)": {
         "Rp_cfm_per": 5, "Rp_Lps_per": 2.5, "Ra_cfm_ft2": 0.06, "Ra_Lps_m2": 0.3, "Default_Occ_Density_per_1000ft2": 4, "DeltaC_ppm": 600, "Occupied_Standby_Allowed": "YES"
     },
-    "Freezer and refrigerated spaces (<50°F [10°C])": {
+    "Freezer and refrigerated spaces (<50F [10C])": {
         "Rp_cfm_per": 10, "Rp_Lps_per": 5, "Ra_cfm_ft2": 0, "Ra_Lps_m2": 0, "Default_Occ_Density_per_1000ft2": 0, "DeltaC_ppm": None, "Occupied_Standby_Allowed": None
     },
     "Manufacturing where hazardous materials are not used": {
@@ -222,7 +222,7 @@ VRP_TABLE_6_1 = {
     "Lobbies": {
         "Rp_cfm_per": 5, "Rp_Lps_per": 2.5, "Ra_cfm_ft2": 0.06, "Ra_Lps_m2": 0.3, "Default_Occ_Density_per_1000ft2": 150, "DeltaC_ppm": 1800, "Occupied_Standby_Allowed": "YES"
     },
-    "Museums (children’s)": {
+    "Museums (children's)": {
         "Rp_cfm_per": 7.5, "Rp_Lps_per": 3.8, "Ra_cfm_ft2": 0.12, "Ra_Lps_m2": 0.6, "Default_Occ_Density_per_1000ft2": 40, "DeltaC_ppm": 1800, "Occupied_Standby_Allowed": None
     },
     "Museums/galleries": {
@@ -291,7 +291,7 @@ VRP_TABLE_6_1 = {
     "Swimming (pool & deck)": {
         "Rp_cfm_per": 0, "Rp_Lps_per": 0, "Ra_cfm_ft2": 0.48, "Ra_Lps_m2": 2.4, "Default_Occ_Density_per_1000ft2": 0, "DeltaC_ppm": None, "Occupied_Standby_Allowed": None
     },
-    
+
     
     # Outpatient Health Care Facilities (ASHRAE 62.1 Table P-1)
     "Birthing room": {
@@ -402,7 +402,7 @@ VRP_TABLE_6_1 = {
         "Default_Occ_Density_per_1000ft2": 20,
         "Notes": "Outpatient health care"
     }
-    
+        
 } # -- End of VRP_TABLE_6_1 --
 
 
